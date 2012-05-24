@@ -1,0 +1,4 @@
+== Textspansion Web Interface
+
+Syncs with the Android app.
+

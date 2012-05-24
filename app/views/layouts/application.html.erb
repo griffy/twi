@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= yield :title %></title>
+  <%= stylesheet_link_tag "application", :media => "all" %>
+  <%= javascript_include_tag "application" %>
+  <%= csrf_meta_tags %>
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <header class="navbar navbar-fixed-top">
+  	<div class="navbar-inner">
+      <div class="container">
+      	<%= link_to image_tag("txt.png", :alt => "Textspansion"), root_url, :id => "logo" %>
+      	<nav>
+      	  <ul class="nav pull-right">
+            <% if logged_in? %>
+            <li><%= link_to "Snippets", snippets_path %></li>
+            <li><%= link_to "Logout", logout_path, :method => :delete %></li>
+            <% else %>
+      	  	<li><%= link_to "Login", login_path %></li>
+      	  	<li><%= link_to "Sign Up", signup_path %></li>
+            <% end %>
+      	  </ul>
+      	</nav>
+      </div>
+    </div>
+  </header>
+  <div class="container">
+    <%= yield %>
+  </div>
+</body>
+</html>
