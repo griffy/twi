@@ -9,6 +9,11 @@ if defined?(Bundler)
   # Bundler.require(:default, :assets, Rails.env)
 end
 
+# FIXME: is it the name of the app, or of the auth server?
+OAuth2::Provider.realm = 'Twi'
+# We want all communication over TSL
+# OAuth2::Provider.enforce_ssl = true
+
 module Twi
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.

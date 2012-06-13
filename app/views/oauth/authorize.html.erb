@@ -1,0 +1,25 @@
+<h1>Authorize OAuth2 Client</h1>
+
+<p>'<%= @oauth2.client.name %>' would like to have access to the following permissions on your behalf:</p>
+
+<ul>
+  <% @oauth2.scopes.each do |scope| %>
+    <% next unless permissions[scope] %>
+    <li><%= permissions[scope] %></li>
+  <% end %>
+</ul>
+
+<%= form_tag(oauth_authorize_path) do %>
+  <% @oauth2.params.each do |key, value| %>
+    <input type="hidden" name="<%= key %>" value="<%= value %>">
+  <% end %>
+
+  <div class="field">
+    <%= label_tag :allow %>
+    <%= check_box_tag :allow %>
+  </div>
+
+  <div class="actions">
+    <%= submit_tag("Submit") %>
+  </div>
+<% end %>

@@ -38,6 +38,11 @@ class SnippetsController < ApplicationController
   # GET /snippets/1/edit
   def edit
     @snippet = current_user.snippets.find(params[:id])
+    
+    respond_to do |format|
+      format.html # edit.html.erb
+      format.json { render :json => @snippet }
+    end
   end
 
   # POST /snippets

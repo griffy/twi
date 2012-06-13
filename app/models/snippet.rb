@@ -10,4 +10,5 @@ class Snippet < ActiveRecord::Base
                          :numericality => { :only_integer => true }
 
   belongs_to :user
+  has_many :tags, :through => :tagged_snippets
 end

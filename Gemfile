@@ -7,6 +7,12 @@ gem 'rails', '3.2.3'
 
 gem 'sqlite3'
 
+# for API goodness
+gem 'grape', :git => 'git://github.com/intridea/grape'
+
+# for OAuth2 goodness
+gem 'oauth2-provider', :require => 'oauth2/provider',
+                       :git => 'git://github.com/songkick/oauth2-provider'
 
 # Gems used only for assets and not required
 # in production environments by default.

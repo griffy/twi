@@ -5,7 +5,7 @@ class CreateSnippets < ActiveRecord::Migration
       t.text :content
       t.integer :visibility
       t.references :user
-      
+
       t.timestamps
     end
 

@@ -1,3 +1,5 @@
+require 'api/application'
+
 Twi::Application.routes.draw do
   root :to => 'home#index'
 
@@ -9,6 +11,10 @@ Twi::Application.routes.draw do
   match 'logout' => 'sessions#destroy', :via => :delete
   match 'signup' => 'users#new', :via => :get
   
+  match 'oauth/authorize' => 'oauth#authorize', :via => [:get, :post]
+
+  mount API::Application => '/api'
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
