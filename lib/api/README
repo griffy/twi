@@ -1,0 +1,40 @@
+OAuth2 is all about relying on the encryption that https provides for secure sending and requesting of data from an API. Because of this assumption, the protocol is simplified. 
+
+OAuth2 in a nutshell:
+An access token is the key to a user's data. Access tokens must be generated on a per-user basis under the assumption that your application is *already* registered with the server as an authorized client. These authorized clients are assigned both a client_id and a client_secret (similar to a password) by the server at the time of the application's registration. The first time a user runs this registered application, the application will request access to the user's data at said server through an exchange of information. This exchange is simple-ish, but a bit of a pain in the ass. Essentially, what must happen is the following:
+  1. The user will run the application and want it to have access to her data, causing some sort of window that will load the website/server that stores her data.
+  2. She will have to login to the server first (if not already logged in), which will redirect her to the authorization page.
+  3. The authorization page will show what "scope" of her data the application will have access to.
+  4. She'll click some sort of "Allow" button on this page, and another redirect will occur from the main server back to the application.
+The reason for this exchange is so that the user never has to give her password to the application that has permission to access her data. The only thing the application gets throughout this process is an access token from the server that specifies exactly what information from the user it can access. The reason this is awesome is that the user can revoke access to her data at any time at the main website/server, and the application will be unable to do anything about it since it does not have her password, as well as that the user can finetune exactly what permissions she wants to give to the application.
+
+Luckily, we can simplify this process with our application. For one, since we own the website we'll be writing the application for, we can pre-register our application on initialization of the database without the need for using a separate API just to register ourselves. The best part, though, is that we can borrow some ideas from Github's API and use an "Authorizations" resource whereby if the user *does* trust an application with her password (if for only just the authorization step), the application can authenticate with the server as the user through Basic Authentication (passing the username and password as a base64 encoded string in a header) by POSTing at an https endpoint, and receive an access token that way.
+
+With that said, the API looks like this (so far):
+https://textspansion.com/api/authorizations
+https://textspansion.com/api/users
+https://textspansion.com/api/snippets
+
+For the Authorizations resource, you must use Basic Authentication with your requests:
+curl -u "username:password" https://textspansion.com/api/authorizations -d "{ 'client_id': 'hunter2' }"
+
+This performs a POST to the authorizations endpoint of the API *as* the user, passing the id of the registered application so that a new authorization can be created for this application. The returned data would include the access token.
+
+For the rest of the API endpoints, it is assumed that the application has an access token, so OAuth2 Authentication must be used with your requests:
+<insert example>
+
+For all endpoints, REST is followed. ie,
+POST /snippets
+  creates a new snippet
+GET /snippets
+  lists all known snippets
+PUT /snippets
+  replaces all the snippets with the given ones
+DELETE /snippets
+  deletes all the snippets
+GET /snippets/:id
+  lists the specified snippet
+PUT /snippets/:id
+  replaces the specified snippet with the given one
+DELETE /snippets/:id
+  deletes the specified snippet

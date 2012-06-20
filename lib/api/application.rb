@@ -5,14 +5,6 @@
 #       sending back errors to begin with, but this is still
 #       annoying.
 
-#require File.join(File.expand_path(File.dirname(__FILE__)), '..', 'entities', 'entities')
-#require File.join(File.expand_path(File.dirname(__FILE__)), '..', 'helpers', 'helpers')
-#require 'api/entities/authorization'
-#require 'api/entities/snippet'
-#require 'api/entities/user'
-#require 'api/helpers/auth'
-#require 'api/helpers/model'
-#require 'api/helpers/resource'
 require 'api'
 
 module API
