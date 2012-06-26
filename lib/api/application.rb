@@ -10,29 +10,30 @@ require 'api'
 module API
   class Application < Grape::API
     version 'v1', :using => :header, :vendor => '1393designs'
+    # TODO: without this here, the API seems to ignore
+    #       Accept headers specifying json as return format
+    default_format :json
 
     represent OAuth2::Model::Authorization, :with => API::Entities::Authorization
     represent User, :with => API::Entities::User
     represent Snippet, :with => API::Entities::Snippet
 
-    helpers API::Helpers::Resource
-    helpers API::Helpers::Model
-    helpers API::Helpers::Auth
+    helpers API::Helpers::All
 
-    # Modeled after Github's Non-Web App Flow :)
+    # Modeled after Github's Non-Webapp Flow :)
     resource :authorizations do
       # All auth routes require Basic Authorization
       http_basic do |email, password|
-        @owner = User.authenticate(email, password)
+        User.authenticate(email, password)
       end
 
       get do
-        auths = @owner.authorizations
+        auths = current_user.oauth2_authorizations
         present_all! auths
       end
 
       get '/:id' do
-        auth = @owner.authorizations.find(params[:id])
+        auth = current_user.oauth2_authorizations.find_by_id(params[:id])
         unless auth
           error! 'Invalid authorization id'
         end
@@ -54,32 +55,21 @@ module API
           params[:scope] = 'all'
         end
 
-        # create a new authorization
-        prov_auth = OAuth2::Provider::Authorization.new(@owner, 
-          :response_type => 'token',
-          :client_id => params[:client_id],
-          :redirect_uri => client.redirect_uri,
+        auth = OAuth2::Model::Authorization.for_response_type(:token.to_s,
+          :owner => current_user,
+          :client => client,
           :scope => params[:scope]
-        )
+        ) # :duration => ?
 
-        unless prov_auth
+        unless auth
           error! 'Unable to create authorization'
         end
 
-        prov_auth.grant_access! # :duration => ?
-
-        # Load the actual database model and present it
-        auth = OAuth2::Model::Authorization.for(@owner, client)
-        # We only get access to the access and refresh tokens
-        # once, so we have to monkey-patch our database
-        # model instance for presenting them
-        present! auth,
-          :access_token => prov_auth.access_token,
-          :refresh_token => prov_auth.refresh_token
+        present! auth
       end
 
       delete '/:id' do
-        auth = @owner.authorizations.find(params[:id])
+        auth = current_user.authorizations.find_by_id(params[:id])
         unless auth
           error! 'Invalid authorization id'
         end

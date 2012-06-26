@@ -33,7 +33,9 @@ class User < ActiveRecord::Base
   validates_associated :snippets # is this necessary?
   validates_associated :tags # ditto
 
-  def self.authenticate(email, password)
-    find_by_email(email).try(:authenticate, password)
+  class << self
+    def authenticate(email, password)
+      find_by_email(email).try(:authenticate, password)
+    end
   end
 end

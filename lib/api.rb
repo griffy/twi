@@ -3,9 +3,10 @@ require 'api/entity'
 
 module API
   module Helpers
+    autoload :All, 'api/helpers/all'
+    autoload :Auth, 'api/helpers/auth'
     autoload :Model, 'api/helpers/model'
     autoload :Resource, 'api/helpers/resource'
-    autoload :Auth, 'api/helpers/auth'
   end
 
   module Entities

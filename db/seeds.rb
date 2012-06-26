@@ -15,4 +15,5 @@ client = admin.oauth2_clients.create(:name => "Textspansion for Android",
                                      :redirect_uri => "https://textspansion.com/oauth/android_callback")
 client.save
 
-puts client.client_id
+puts "client_id: #{client.client_id}"
+puts "client_secret: #{client.client_secret}"
