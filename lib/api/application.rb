@@ -22,7 +22,7 @@ module API
 
     # Modeled after Github's Non-Webapp Flow :)
     resource :authorizations do
-      # All auth routes require Basic Authorization
+      # All auth routes require Basic Authentication
       http_basic do |email, password|
         User.authenticate(email, password)
       end
@@ -52,10 +52,12 @@ module API
 
         # give all permissions if none specified
         unless params.include? :scope
-          params[:scope] = 'all'
+          params[:scope] = 'access_all'
         end
 
-        auth = OAuth2::Model::Authorization.for_response_type(:token.to_s,
+        puts current_user.email
+
+        auth = OAuth2::Model::Authorization.for_response_type('token',
           :owner => current_user,
           :client => client,
           :scope => params[:scope]
@@ -69,7 +71,7 @@ module API
       end
 
       delete '/:id' do
-        auth = current_user.authorizations.find_by_id(params[:id])
+        auth = current_user.oauth2_authorizations.find_by_id(params[:id])
         unless auth
           error! 'Invalid authorization id'
         end
@@ -80,27 +82,32 @@ module API
     end
 
     resource :users do
+      get 
     end
 
     resource :snippets do # per-user
       get do
-        authenticate!
-        current_user.snippets
+        can 'read_snippets'
+        present_all! current_user.snippets
       end
 
       put do
+        can 'write_snippets'
         # replace all user's snippets with these new ones
       end
     
       post do
+        can 'write_snippets'
         # create a new snippet
       end
 
       delete do
+        can 'delete_snippets'
         # delete all the user's snippets
       end
 
       get '/:id' do
+        can 'read_snippets'
         # return a specific snippet according to 
         # requested MIME type
 
@@ -109,17 +116,20 @@ module API
       end
 
       put '/:id' do
+        can 'write_snippets'
         # update the snippet with this new one
         # or create a new one altogether at this URI
       end
 
       post '/:id' do
+        can 'write_snippets'
         # this might be useful if we want to create
         # snippets that belong to a parent snippet
         # ie, 'folder'
       end
 
       delete '/:id' do
+        can 'delete_snippets'
         # delete this snippet
       end
     end

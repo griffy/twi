@@ -1,7 +1,7 @@
 # Load the monkey-patched Grape::Entity class
 require 'api/entity'
 
-module API
+module API  
   module Helpers
     autoload :All, 'api/helpers/all'
     autoload :Auth, 'api/helpers/auth'
