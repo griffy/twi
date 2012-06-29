@@ -98,11 +98,37 @@ module API
     
       post do
         can 'write_snippets'
+
+        unless params.include? :title
+          error! 'No title provided'
+        end
+
+        unless params.include? :content
+          error! 'No content provided'
+        end
+
+        unless params.include? :visibility
+          error! 'No visibility provided'
+        end
+
         # create a new snippet
+        snippet = Snippet.new(:title => params[:title],
+                              :content => params[:content],
+                              :visibility => params[:visibility])
+        snippet.user_id = current_user.id
+
+        unless snippet.save
+          error! 'Unable to create snippet'
+        end
+
+        present! snippet
       end
 
       delete do
         can 'delete_snippets'
+
+        current_user.snippets.destroy
+
         # delete all the user's snippets
       end
 
@@ -130,7 +156,14 @@ module API
 
       delete '/:id' do
         can 'delete_snippets'
+
+        unless params.include? :id
+          error! 'No id provided'
+        end
+
         # delete this snippet
+        snippet = current_user.snippets.find_by_id(params[:id])
+        snippet.destroy
       end
     end
   end
