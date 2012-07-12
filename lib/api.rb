@@ -14,4 +14,8 @@ module API
     autoload :User, 'api/entities/user'
     autoload :Snippet, 'api/entities/snippet'
   end
+
+  module Resources
+    autoload :Authorizations, 'api/resources/authorizations'
+  end
 end

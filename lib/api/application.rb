@@ -7,6 +7,8 @@
 
 require 'api'
 
+PAGE_SIZE = 10
+
 module API
   class Application < Grape::API
     version 'v1', :using => :header, :vendor => '1393designs'
@@ -41,9 +43,7 @@ module API
       end
 
       post do
-        unless params.include? :client_id
-          error! 'No client id provided'
-        end
+        provides :client_id
 
         client = OAuth2::Model::Client.find_by_client_id(params[:client_id])
         unless client
@@ -54,8 +54,6 @@ module API
         unless params.include? :scope
           params[:scope] = 'access_all'
         end
-
-        puts current_user.email
 
         auth = OAuth2::Model::Authorization.for_response_type('token',
           :owner => current_user,
@@ -82,13 +80,20 @@ module API
     end
 
     resource :users do
-      get 
     end
 
     resource :snippets do # per-user
       get do
         can 'read_snippets'
-        present_all! current_user.snippets
+        if params.include? :page
+          page_start = (params[:page].to_i - 1) * PAGE_SIZE
+          snippets = current_user.snippets
+                                 .limit(PAGE_SIZE)
+                                 .offset(page_start)
+          present_all! snippets.limit(PAGE_SIZE).offset(page_start)
+        else
+          present_all! snippets.limit(PAGE_SIZE)
+        end
       end
 
       put do
@@ -98,18 +103,7 @@ module API
     
       post do
         can 'write_snippets'
-
-        unless params.include? :title
-          error! 'No title provided'
-        end
-
-        unless params.include? :content
-          error! 'No content provided'
-        end
-
-        unless params.include? :visibility
-          error! 'No visibility provided'
-        end
+        provides :title, :content, :visibility
 
         # create a new snippet
         snippet = Snippet.new(:title => params[:title],
@@ -127,24 +121,42 @@ module API
       delete do
         can 'delete_snippets'
 
-        current_user.snippets.destroy
-
         # delete all the user's snippets
+        current_user.snippets.destroy
       end
 
       get '/:id' do
         can 'read_snippets'
-        # return a specific snippet according to 
-        # requested MIME type
-
-        # something like Snippet.find(params[:id])
-        # where we also narrow down by user
+        snippet = current_user.snippets.find_by_id(params[:id])
+        unless snippet
+          error! 'Unable to find snippet by that id'
+        end
+        present! snippet
       end
 
       put '/:id' do
         can 'write_snippets'
+        provides :title, :content, :visibility
+
         # update the snippet with this new one
         # or create a new one altogether at this URI
+        snippet = current_user.snippets.find_by_id(params[:id])
+        if snippet
+          snippet.title = params[:title]
+          snippet.content = params[:content]
+          snippet.visibility = params[:visibility]
+        else
+          snippet = Snippet.new(:title => params[:title],
+                                :content => params[:content],
+                                :visibility => params[:visibility])
+          snippet.user_id = current_user.id
+        end
+
+        unless snippet.save
+          error! 'Unable to update snippet'
+        end
+
+        present! snippet
       end
 
       post '/:id' do
@@ -157,13 +169,11 @@ module API
       delete '/:id' do
         can 'delete_snippets'
 
-        unless params.include? :id
-          error! 'No id provided'
-        end
-
         # delete this snippet
         snippet = current_user.snippets.find_by_id(params[:id])
         snippet.destroy
+
+        status 204
       end
     end
   end

@@ -52,7 +52,7 @@ module API
           present model
           body = old_body + "," + body
         end
-        body += "]"
+        body = body + "]"
       end
 
       # Updates a model by dynamically adding
